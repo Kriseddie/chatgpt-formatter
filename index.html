@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>ChatGPT 教學格式轉換器 + 預覽</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; padding: 2em; background: #f9f9f9; }
+    textarea, pre { width: 100%; padding: 1em; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; margin-top: 1em; }
+    button { margin-top: 1em; padding: 0.6em 1.2em; font-size: 16px; background-color: #0078d7; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background-color: #005fa3; }
+    #preview { background-color: #fff; padding: 1em; border: 1px solid #ccc; border-radius: 5px; margin-top: 1em; }
+    h2, h3 { margin-top: 1.5em; }
+    .error { color: red; margin-top: 1em; display: none; }
+  </style>
+</head>
+<body>
+  <h2>📄 ChatGPT 教學文字格式轉換器（含預覽）</h2>
+  <p>貼上段落與公式，點「整理格式」可即時預覽標題、段落、數學公式排版。</p>
+
+  <textarea id="inputText" placeholder="請貼上教學段落、公式內容等..."></textarea>
+  <br>
+  <button onclick="formatText()">整理格式</button>
+  <div class="error" id="error">⚠ 請先貼上內容再整理！</div>
+
+  <h3>🧾 整理後文字（可複製）：</h3>
+  <pre id="output"></pre>
+
+  <h3>👀 預覽效果：</h3>
+  <div id="preview"></div>
+
+  <script>
+    function formatText() {
+      const input = document.getElementById("inputText").value.trim();
+      const errorDiv = document.getElementById("error");
+      const output = document.getElementById("output");
+      const preview = document.getElementById("preview");
+
+      if (!input) {
+        errorDiv.style.display = "block";
+        output.textContent = "";
+        preview.innerHTML = "";
+        return;
+      } else {
+        errorDiv.style.display = "none";
+      }
+
+      const cleaned = input
+        .replace(/\r/g, "")
+        .replace(/^([0-9]+\.|[0-9]+\))\s*/gm, "## $1 ")
+        .replace(/^\*\s+/gm, "- ")
+        .replace(/\s*([。！？；:])\s*/g, "$1\n")
+        .replace(/\s*([.?!;:])\s*/g, "$1\n")
+        .replace(/\n{2,}/g, "\n")
+        .replace(/([\u4e00-\u9fa5])\s+([\u4e00-\u9fa5])/g, "$1$2")
+        .replace(/\n(?=\()/g, "\n\n")
+        .replace(/(\$[^\$]+\$)/g, "$$$1$$")
+        .trim();
+
+      output.textContent = cleaned;
+      const html = marked.parse(cleaned);
+      preview.innerHTML = html;
+      renderMathInElement(preview, { delimiters: [ {left: '$$', right: '$$', display: true} ] });
+    }
+  </script>
+</body>
+</html>
